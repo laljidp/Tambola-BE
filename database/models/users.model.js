@@ -2,36 +2,36 @@ import mongoose from 'mongoose'
 import { COLLECTION } from '../collections'
 const { Schema } = mongoose
 
-export const Users = mongoose.model(COLLECTION.USERS, new Schema({
-  firstName: {
-    type: String,
-    required: true
-  },  
+const Users = mongoose.model(COLLECTION.USERS, new Schema({ 
+ firstName: {
+    type: String,        
+  },
   lastName: {
+    type: String
+  },
+  profilePhoto: String,
+  password: String,
+  source: { type: String, required: [true, "source not specified"] },
+  googleId: {
     type: String,
-    required: true
-  },    
-  username: {
-    type: String,
-    required: true,
-    unique: true
+    default: null
   },
   email: {
     type: String,
-    unique: true,
-    required: true
-  },  
+    unique: [true, 'email already registered!'],
+    required: [true, 'email is required'],
+    match: /[a-z0–9!#$%&’*+/=?^_`{|}~-]+(?:\.[a-z0–9!#$%&’*+/=?^_`{|}~-]+)*@(?:[a-z0–9](?:[a-z0–9-]*[a-z0–9])?\.)+[a-z0–9](?:[a-z0–9-]*[a-z0–9])?/
+  },
   phone_no: {
     type: String,
-    required: true
+    default: null    
   },  
   country_code: {
     type: String,
     required: true,
     default: '+91'
   },
-  last_logged_in: {
-    type: Date,
-    default: null
-  }
+  lastVisited: { type: Date, default: new Date() }
 }, { timestamps: true }))
+
+export default Users

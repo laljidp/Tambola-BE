@@ -1,19 +1,19 @@
-import express from 'express'
+import express, { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import passport from 'passport'
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken'
-import { Users } from '../database/models'
+import { Users } from '../database/models/users.model'
 
-const Route = express.Router()
+const router = express.Router()
 
 dotenv.config()
 
 const { SECRET_KEY } = process.env
 
-Route.get('/', (req, res) => { res.send({ message: 'You\'re accessing auth routes..' }) })
+router.get('/', (req, res) => { res.send({ message: 'You\'re accessing auth routes..' }) })
 
-Route.post('/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body
   console.log('req.body', req.body)
   const user = await Users.find({ username }).exec()
@@ -37,7 +37,7 @@ Route.post('/login', async (req, res) => {
   }
 })
 
-Route.get('/checkAuthToken', passport.authenticate('jwt', { session: false }), async (req, res) => {
+router.get('/checkAuthToken', passport.authenticate('jwt', { session: false }), async (req, res) => {
   if (req.user) {
     const { __id } = req.user
     const user = await Users.findOne({ _id: __id })
@@ -49,4 +49,27 @@ Route.get('/checkAuthToken', passport.authenticate('jwt', { session: false }), a
   }
 })
 
-export default Route
+router.get(
+  "/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "/",
+    successRedirect: "/profile"    
+  })
+);
+
+router.get("/logout", (req, res) => {
+  req.session.destroy(function () {
+    res.clearCookie("connect.sid");
+    res.redirect("/");
+  });
+});
+
+
+export default router
