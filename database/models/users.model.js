@@ -1,37 +1,80 @@
 import mongoose from 'mongoose'
 import { COLLECTION } from '../collections'
+import { sign } from 'jsonwebtoken'
+const otpGenerator = require('otp-generator')
 const { Schema } = mongoose
+require('dotenv').config()
 
-const Users = mongoose.model(COLLECTION.USERS, new Schema({ 
- firstName: {
-    type: String,        
+const { JWT_SECRET } = process.env
+
+const UserSchema = new Schema({
+  firstName: {
+    type: String
   },
   lastName: {
     type: String
   },
-  profilePhoto: String,
-  password: String,
-  source: { type: String, required: [true, "source not specified"] },
-  googleId: {
-    type: String,
-    default: null
+  profilePhoto: {
+    type: String
   },
   email: {
     type: String,
     unique: [true, 'email already registered!'],
-    required: [true, 'email is required'],
-    match: /[a-z0–9!#$%&’*+/=?^_`{|}~-]+(?:\.[a-z0–9!#$%&’*+/=?^_`{|}~-]+)*@(?:[a-z0–9](?:[a-z0–9-]*[a-z0–9])?\.)+[a-z0–9](?:[a-z0–9-]*[a-z0–9])?/
+    required: false,
+    default: null,
+    match: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   },
   phone_no: {
     type: String,
-    default: null    
-  },  
+    required: true,
+    unique: [true, 'Phone_no already registered!']
+  },
   country_code: {
     type: String,
     required: true,
     default: '+91'
   },
-  lastVisited: { type: Date, default: new Date() }
-}, { timestamps: true }))
+  otp: {
+    type: String,
+    required: false
+  },
+  otpExpires: {
+    type: String,
+    required: false
+  },
+  lastVisited: {
+    type: Date, default: new Date()
+  }
+}, { timestamps: true })
 
-export default Users
+UserSchema.methods.generateJWT = function () {
+  const today = new Date()
+  const expirationDate = new Date(today)
+  expirationDate.setDate(today.getDate() + 60)
+
+  const payload = {
+    id: this._id,
+    firstName: this.firstName,
+    lastName: this.lastName,
+    phone_no: this.phone_no
+  }
+
+  return sign(payload, JWT_SECRET, {
+    expiresIn: '30d'
+  })
+}
+
+UserSchema.methods.generateOTP = function () {
+  this.otp = otpGenerator.generate(6, {
+    lowerCaseAlphabets: false,
+    upperCaseAlphabets: false,
+    specialChars: false
+  })
+  this.otpExpires = Date.now() + 3600000 // expires in an hour
+}
+
+mongoose.set('useFindAndModify', false)
+
+const User = mongoose.model(COLLECTION.USERS, UserSchema)
+
+export default User
