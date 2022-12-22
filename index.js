@@ -23,7 +23,7 @@ const startServer = async () => {
 
   // configuring passport (initialization)
   app.use(passport.initialize())
-  require('./middlewares/jwt')
+  require('./middlewares/jwt')(passport)
 
   // Configuring request body middleware
   app.use(bodyParser.json())
@@ -37,6 +37,7 @@ const startServer = async () => {
   const PORT = 4000
 
   app.get('/', (req, res) => res.send({ message: 'App is Running..' }))
+  
   // Configuring Routes
   require('./routes/index')(app)
 

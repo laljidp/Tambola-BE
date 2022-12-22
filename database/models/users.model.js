@@ -19,8 +19,9 @@ const UserSchema = new Schema({
   },
   email: {
     type: String,
-    unique: [true, 'email already registered!'],
     required: false,
+    unique: true,
+    sparse: true,
     default: null,
     match: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   },
@@ -70,7 +71,7 @@ UserSchema.methods.generateOTP = function () {
     upperCaseAlphabets: false,
     specialChars: false
   })
-  this.otpExpires = Date.now() + 3600000 // expires in an hour
+  this.otpExpires = Date.now() + (30*60*1000) // expires in an 30m = (30*60*1000)
 }
 
 mongoose.set('useFindAndModify', false)
