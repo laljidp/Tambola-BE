@@ -1,5 +1,5 @@
 import User from '../database/models/users.model'
-import { getTextMSg, sendSMS } from '../utils'
+import { fullPhoneNumber, getTextMSg, sendSMS } from '../utils'
 
 // @route POST api/user
 // @desc Add a new user
@@ -9,7 +9,7 @@ export const registerUser = async (req, res) => {
 
     const user = await User.findOne({ phoneNo })
 
-    if (user) return res.status(403).json({ success: false, message: 'User with associated Phone number already exists!' })
+    if (user) return res.status(200).json({ success: false, message: 'User with associated Phone number already exists!' })
 
     const newUser = new User({ ...req.body })
 
@@ -31,7 +31,7 @@ export const registerUser = async (req, res) => {
 
     res.status(200).json({ success: true, message: `An OTP has been sent to ${__user.phoneNo}` })
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message })
+    res.status(200).json({ success: false, message: err.message })
   }
 }
 
@@ -39,10 +39,10 @@ export const registerUser = async (req, res) => {
 // @desc Login user and return JWT token
 // @access Public
 export const login = (req, res) => {
-  User.findOne({ phoneNo: req.body.phoneNo, countryCode: res.body?.countryCode })
+  User.findOne({ phoneNo: req.body.phoneNo })
     .then(user => {
       if (!user) {
-        return res.status(401).json({
+        return res.status(200).json({
           success: false,
           message: `The Phone number you've entered is not associated with any account! Please try again!`
         })
@@ -59,7 +59,7 @@ export const login = (req, res) => {
 
       res.status(200).json({ success: true, message: `OTP has been sent to ${user.countryCode} ${user.phoneNo}` })
     })
-    .catch(err => res.status(500).json({ success: false, error: err.message }))
+    .catch(err => res.status(200).json({ success: false, error: err.message }))
 }
 
 export const verifyOTPForLogin = (req, res) => {
@@ -75,7 +75,7 @@ export const verifyOTPForLogin = (req, res) => {
       }
 
       if (user.otp !== otp) {
-        return res.status(401).json({ sucess: false, message: 'Invalid OTP' })
+        return res.status(200).json({ sucess: false, message: 'Invalid OTP' })
       }
 
       // verify OTP
@@ -89,7 +89,9 @@ export const verifyOTPForLogin = (req, res) => {
             lastName: user.lastName,
             _id: user._id,
             email: user.email
-          }
+          },
+          success: true, 
+          message: 'OTP verified!'
         })
       } else {
         res.status(401).json({ success: false, message: 'OTP expired !' })
@@ -100,11 +102,11 @@ export const verifyOTPForLogin = (req, res) => {
 export const resendOTP = (req, res) => {
   const { phoneNo } = req.body
 
-  if (!phoneNo) return res.status(403).json({ success: false, message: 'Bad request!' })
+  if (!phoneNo) return res.status(200).json({ success: false, message: 'Bad request!' })
 
   User.findOne({ phoneNo })
     .then(user => {
-      if (!user) return res.status(403).json({ success: false, message: 'Invalid request! Account not found' })
+      if (!user) return res.status(200).json({ success: false, message: 'Invalid request! Account not found' })
       // Generate OTP for & save in DB
       user.generateOTP()
       user.save()
