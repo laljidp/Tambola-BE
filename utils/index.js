@@ -38,3 +38,11 @@ export const sendSMS = (to, body) => {
     console.log('Error sending SMS', err)
   }
 }
+
+export const getTextMSg = (otp) => {
+  return `Your OTP for Tambola Game is: ${otp}`
+}
+
+export const fullPhoneNumber = (countryCode, phoneNo) => {
+  return countryCode + phoneNo
+}

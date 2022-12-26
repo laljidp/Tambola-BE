@@ -9,13 +9,16 @@ const { JWT_SECRET } = process.env
 
 const UserSchema = new Schema({
   firstName: {
-    type: String
+    type: String,
+    required: true
   },
   lastName: {
-    type: String
+    type: String,
+    required: true
   },
   profilePhoto: {
-    type: String
+    type: String,
+    default: null
   },
   email: {
     type: String,
@@ -25,23 +28,25 @@ const UserSchema = new Schema({
     default: null,
     match: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   },
-  phone_no: {
+  phoneNo: {
     type: String,
     required: true,
-    unique: [true, 'Phone_no already registered!']
+    unique: [true, 'PhoneNo already registered!']
   },
-  country_code: {
+  countryCode: {
     type: String,
     required: true,
     default: '+91'
   },
   otp: {
     type: String,
-    required: false
+    required: false,
+    default: null
   },
   otpExpires: {
     type: String,
-    required: false
+    required: false,
+    default: null
   },
   lastVisited: {
     type: Date, default: new Date()
@@ -57,7 +62,7 @@ UserSchema.methods.generateJWT = function () {
     id: this._id,
     firstName: this.firstName,
     lastName: this.lastName,
-    phone_no: this.phone_no
+    phoneNo: this.phoneNo
   }
 
   return sign(payload, JWT_SECRET, {
@@ -71,7 +76,7 @@ UserSchema.methods.generateOTP = function () {
     upperCaseAlphabets: false,
     specialChars: false
   })
-  this.otpExpires = Date.now() + (30*60*1000) // expires in an 30m = (30*60*1000)
+  this.otpExpires = Date.now() + (30 * 60 * 1000) // expires in an 30m = (30*60*1000)
 }
 
 mongoose.set('useFindAndModify', false)

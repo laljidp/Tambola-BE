@@ -1,13 +1,13 @@
 import User from '../database/models/users.model'
-import { sendSMS } from '../utils'
+import { getTextMSg, sendSMS } from '../utils'
 
 // @route POST api/user
 // @desc Add a new user
 export const registerUser = async (req, res) => {
   try {
-    const { phone_no } = req.body
+    const { phoneNo } = req.body
 
-    const user = await User.findOne({ phone_no })
+    const user = await User.findOne({ phoneNo })
 
     if (user) return res.status(403).json({ success: false, message: 'User with associated Phone number already exists!' })
 
@@ -21,16 +21,15 @@ export const registerUser = async (req, res) => {
     // save the updated User
     await __user.save()
 
-    console.log('counrty code', __user.country_code)
     // Configure SMS to sent
-    const textMsg = `Your OTP for Tambola game is:  ${__user.otp}`
+    const textMsg = getTextMSg(__user.otp)
     try {
-      sendSMS(`${__user.country_code}${phone_no}`, textMsg)
+      sendSMS(`${__user.countryCode}${phoneNo}`, textMsg)
     } catch (err) {
       console.log('Error while sending SMS form Twilio API', err)
     }
 
-    res.status(200).json({ success: true, message: `An OTP has been sent to ${__user.phone_no}` })
+    res.status(200).json({ success: true, message: `An OTP has been sent to ${__user.phoneNo}` })
   } catch (err) {
     res.status(500).json({ success: false, message: err.message })
   }
@@ -40,7 +39,7 @@ export const registerUser = async (req, res) => {
 // @desc Login user and return JWT token
 // @access Public
 export const login = (req, res) => {
-  User.findOne({ phone_no: req.body.phone_no })
+  User.findOne({ phoneNo: req.body.phoneNo, countryCode: res.body?.countryCode })
     .then(user => {
       if (!user) {
         return res.status(401).json({
@@ -55,18 +54,18 @@ export const login = (req, res) => {
       user.save()
 
       // send OTP for the sign in
-      const textMsg = `Your OTP for Tambola game is:  ${user.otp}`
-      sendSMS(`${user.country_code}${user.phone_no}`, textMsg)
+      const textMsg = getTextMSg(user.otp)
+      sendSMS(fullPhoneNumber(user.countryCode, user.phoneNo), textMsg)
 
-      res.status(200).json({ success: true, message: `OTP has been sent to ${user.country_code} ${user.phone_no}` })
+      res.status(200).json({ success: true, message: `OTP has been sent to ${user.countryCode} ${user.phoneNo}` })
     })
     .catch(err => res.status(500).json({ success: false, error: err.message }))
 }
 
 export const verifyOTPForLogin = (req, res) => {
-  const { phone_no, otp } = req.body
+  const { phoneNo, otp } = req.body
 
-  User.findOne({ phone_no })
+  User.findOne({ phoneNo })
     .then(user => {
       if (!user) {
         return res.status(401).json({
@@ -75,19 +74,52 @@ export const verifyOTPForLogin = (req, res) => {
         })
       }
 
+      if (user.otp !== otp) {
+        return res.status(401).json({ sucess: false, message: 'Invalid OTP' })
+      }
+
       // verify OTP
       if (user.otp === otp && new Date().getTime() < user.otpExpires) {
         // generate token and sent back
         const token = user.generateJWT()
-        return res.status(200).json({ token,
+        return res.status(200).json({
+          token,
           user: {
             firstName: user.firstName,
             lastName: user.lastName,
             _id: user._id,
             email: user.email
-          } })
+          }
+        })
       } else {
         res.status(401).json({ success: false, message: 'OTP expired !' })
       }
+    })
+}
+
+export const resendOTP = (req, res) => {
+  const { phoneNo } = req.body
+
+  if (!phoneNo) return res.status(403).json({ success: false, message: 'Bad request!' })
+
+  User.findOne({ phoneNo })
+    .then(user => {
+      if (!user) return res.status(403).json({ success: false, message: 'Invalid request! Account not found' })
+      // Generate OTP for & save in DB
+      user.generateOTP()
+      user.save()
+
+      const textMsg = getTextMSg(user.otp)
+      const fullPhoneNumber = fullPhoneNumber(user.countryCode, phoneNo)
+
+      // send text msg to mobile no
+      sendSMS(fullPhoneNumber, textMsg)
+
+      res.status(200)
+        .json({ success: true, message: `OTP has been sent to ${fullPhoneNumber}` })
+    })
+    .catch(err => {
+      console.log('Error while re-sending OTP', err)
+      res.status(500).json({ success: false, message: 'Internal server error!' })
     })
 }

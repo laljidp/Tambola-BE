@@ -6,7 +6,6 @@ import cors from 'cors'
 import passport from 'passport'
 import bodyParser from 'body-parser'
 dotenv.config()
-require('./passport/passport')
 
 const { MONGO_URL } = process.env
 
@@ -37,7 +36,7 @@ const startServer = async () => {
   const PORT = 4000
 
   app.get('/', (req, res) => res.send({ message: 'App is Running..' }))
-  
+
   // Configuring Routes
   require('./routes/index')(app)
 
