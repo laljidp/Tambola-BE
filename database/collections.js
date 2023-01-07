@@ -1,3 +1,4 @@
 export const COLLECTION = {
-  USERS: 'users'
+  USERS: 'users',
+  CONTESTS: 'contests'
 }

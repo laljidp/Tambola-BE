@@ -1,5 +1,5 @@
 import User from '../database/models/users.model'
-import { fullPhoneNumber, getTextMSg, sendSMS } from '../utils'
+import { getFullPhoneNumber, getTextMSg, sendSMS } from '../utils'
 
 // @route POST api/user
 // @desc Add a new user
@@ -55,7 +55,7 @@ export const login = (req, res) => {
 
       // send OTP for the sign in
       const textMsg = getTextMSg(user.otp)
-      sendSMS(fullPhoneNumber(user.countryCode, user.phoneNo), textMsg)
+      sendSMS(getFullPhoneNumber(user.countryCode, user.phoneNo), textMsg)
 
       res.status(200).json({ success: true, message: `OTP has been sent to ${user.countryCode} ${user.phoneNo}` })
     })
@@ -75,13 +75,17 @@ export const verifyOTPForLogin = (req, res) => {
       }
 
       if (user.otp !== otp) {
-        return res.status(200).json({ sucess: false, message: 'Invalid OTP' })
+        return res.status(200).json({ success: false, message: 'Invalid OTP' })
       }
 
       // verify OTP
       if (user.otp === otp && new Date().getTime() < user.otpExpires) {
         // generate token and sent back
         const token = user.generateJWT()
+        if (!user.isVerified) {
+          user.updateVerifyFlag()
+          user.save()
+        }
         return res.status(200).json({
           token,
           user: {
@@ -90,7 +94,7 @@ export const verifyOTPForLogin = (req, res) => {
             _id: user._id,
             email: user.email
           },
-          success: true, 
+          success: true,
           message: 'OTP verified!'
         })
       } else {
@@ -112,7 +116,7 @@ export const resendOTP = (req, res) => {
       user.save()
 
       const textMsg = getTextMSg(user.otp)
-      const fullPhoneNumber = fullPhoneNumber(user.countryCode, phoneNo)
+      const fullPhoneNumber = getFullPhoneNumber(user.countryCode, phoneNo)
 
       // send text msg to mobile no
       sendSMS(fullPhoneNumber, textMsg)

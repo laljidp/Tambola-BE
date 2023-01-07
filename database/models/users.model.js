@@ -23,8 +23,6 @@ const UserSchema = new Schema({
   email: {
     type: String,
     required: false,
-    unique: true,
-    sparse: true,
     default: null,
     match: /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   },
@@ -50,6 +48,10 @@ const UserSchema = new Schema({
   },
   lastVisited: {
     type: Date, default: new Date()
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true })
 
@@ -77,6 +79,10 @@ UserSchema.methods.generateOTP = function () {
     specialChars: false
   })
   this.otpExpires = Date.now() + (30 * 60 * 1000) // expires in an 30m = (30*60*1000)
+}
+
+UserSchema.methods.updateVerifyFlag = function () {
+  this.isVerified = true
 }
 
 mongoose.set('useFindAndModify', false)

@@ -43,6 +43,6 @@ export const getTextMSg = (otp) => {
   return `Your OTP for Tambola Game is: ${otp}`
 }
 
-export const fullPhoneNumber = (countryCode, phoneNo) => {
+export const getFullPhoneNumber = (countryCode, phoneNo) => {
   return countryCode + phoneNo
 }
