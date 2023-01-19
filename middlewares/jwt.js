@@ -3,8 +3,7 @@ import User from '../database/models/users.model'
 
 const opts = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: process.env.JWT_SECRET,
-  algorithm: 'RS384'
+  secretOrKey: process.env.JWT_SECRET
 }
 
 module.exports = passport => {

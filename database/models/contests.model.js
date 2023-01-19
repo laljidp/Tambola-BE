@@ -68,7 +68,6 @@ ContestSchema.method.updateIsActive = function (isActive) {
 ContestSchema.pre('save', function (next) {
   const _tickets = getTickets()
   this.tickets = _tickets.map((ticket, ind) => {
-    console.log('ticket===>>', ticket)
     return {
       series: ticket._entries,
       name: `T-${ind + 1}`
