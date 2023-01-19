@@ -61,11 +61,12 @@ ContestSchema.methods.updateIsFinished = function (isFinished) {
   this.isFinished = isFinished
 }
 
-ContestSchema.method.updateIsActive = function (isActive) {
+ContestSchema.methods.updateIsActive = function (isActive) {
   this.isActive = isActive
 }
 
 ContestSchema.pre('save', function (next) {
+  console.log('pre saved called...')
   const _tickets = getTickets()
   this.tickets = _tickets.map((ticket, ind) => {
     return {

@@ -8,7 +8,8 @@ const router = express.Router()
 
 router.get('/', ContestsController.getActiveContests)
 
-router.post('/',
+router.post(
+  '/',
   checkSchema({
     name: {
       isString: true,
@@ -27,14 +28,29 @@ router.post('/',
     'prizes.thirdRow': { isInt: true },
     'prizes.fullHousie': { isInt: true },
     'prizes.secondFullHousie': { isInt: true },
-    maxParticipants: { isInt: true, errorMessage: 'Invalid maxParticipants value' }
-  })
-  , validate, ContestsController.createContest)
+    maxParticipants: {
+      isInt: true,
+      errorMessage: 'Invalid maxParticipants value'
+    }
+  }),
+  validate,
+  ContestsController.createContest
+)
 
-router.get('/:id',
+router.get(
+  '/:id',
   [param('id', 'Invalid request [ID]!').isMongoId()],
   validate,
   ContestsController.getContestInfoByID
 )
 
+router.post(
+  '/assignTicket',
+  checkSchema({
+    ticketID: { isString: true, errorMessage: 'ticketID is is missing!' },
+    contestID: { isString: true, errorMessage: 'contestID is missing!' }
+  }),
+  validate,
+  ContestsController.assignTicketToUser
+)
 export default router
