@@ -68,7 +68,8 @@ UserSchema.methods.generateJWT = function () {
   }
 
   return sign(payload, JWT_SECRET, {
-    expiresIn: '30d'
+    expiresIn: '30d',
+    algorithm: 'RS384'
   })
 }
 
