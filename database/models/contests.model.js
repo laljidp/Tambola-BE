@@ -1,5 +1,7 @@
 import mongoose from 'mongoose'
+import Tickets from './tickets.model'
 import { COLLECTION } from '../collections'
+import { getTickets } from '../../utils'
 
 const { Schema } = mongoose
 
@@ -24,6 +26,11 @@ const ContestSchema = new Schema({
     thirdRow: Number,
     fullHousie: Number,
     secondFullHousie: Number
+  },
+  tickets: {
+    type: [Tickets],
+    required: true,
+    default: []
   },
   maxParticipants: {
     type: Number,
@@ -57,6 +64,18 @@ ContestSchema.methods.updateIsFinished = function (isFinished) {
 ContestSchema.method.updateIsActive = function (isActive) {
   this.isActive = isActive
 }
+
+ContestSchema.pre('save', function (next) {
+  const _tickets = getTickets()
+  this.tickets = _tickets.map((ticket, ind) => {
+    console.log('ticket===>>', ticket)
+    return {
+      series: ticket._entries,
+      name: `T-${ind + 1}`
+    }
+  })
+  next()
+})
 
 mongoose.set('useFindAndModify', false)
 

@@ -1,3 +1,4 @@
+import { ACTIVE_CONTEST_FIELD } from '../database/db.helper'
 import Contests from '../database/models/contests.model'
 
 export const getAllContests = async (req, res) => {
@@ -14,7 +15,7 @@ export const createContest = async (req, res) => {
     console.log('supasses the validation.....')
     const cts = new Contests({ ...body, startDateTime: new Date(body.startDateTime) })
     cts.save()
-    return res.status(200).json({ success: true, message: 'Contest created', data: cts })
+    return res.status(200).json({ success: true, message: 'Contest created' })
   } catch (err) {
     console.log('err', err?.message)
   }
@@ -22,7 +23,7 @@ export const createContest = async (req, res) => {
 
 export const getActiveContests = async (req, res) => {
   try {
-    const contests = await Contests.find({ isActive: true })
+    const contests = await Contests.find({ isActive: true }, ACTIVE_CONTEST_FIELD.join(' '))
     res.status(200).json({ success: true, data: contests })
   } catch (err) {
     console.log('Error while fetching active contests: ', err)

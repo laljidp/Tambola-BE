@@ -1,3 +1,4 @@
+const tambola = require('tambola-generator').default
 const sgMail = require('@sendgrid/mail')
 require('dotenv').config()
 
@@ -45,4 +46,8 @@ export const getTextMSg = (otp) => {
 
 export const getFullPhoneNumber = (countryCode, phoneNo) => {
   return countryCode + phoneNo
+}
+
+export const getTickets = () => {
+  return tambola.generateTickets(100)
 }

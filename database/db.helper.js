@@ -9,3 +9,13 @@ export const FKHelper = (model, id) => {
     })
   })
 }
+
+export const ACTIVE_CONTEST_FIELD = [
+  'name',
+  'startDateTime',
+  'joiningAmount',
+  'prizes',
+  'maxParticipants',
+  'isFinished',
+  'isPlaying'
+]

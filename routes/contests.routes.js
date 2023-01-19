@@ -31,6 +31,10 @@ router.post('/',
   })
   , validate, ContestsController.createContest)
 
-router.get('/:id', [param('id', 'Invalid request!').isMongoId()], validate, ContestsController.getContestInfoByID)
+router.get('/:id',
+  [param('id', 'Invalid request [ID]!').isMongoId()],
+  validate,
+  ContestsController.getContestInfoByID
+)
 
 export default router
