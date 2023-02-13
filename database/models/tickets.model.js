@@ -12,7 +12,7 @@ const TicketSchema = new Schema({
     type: [],
     required: true
   },
-  userID: {
+  user: {
     type: Schema.Types.ObjectId,
     ref: COLLECTION.USERS,
     default: null

@@ -1,3 +1,4 @@
+import { COLLECTION } from '../database/collections'
 import { ACTIVE_CONTEST_FIELD } from '../database/db.helper'
 import Contests from '../database/models/contests.model'
 
@@ -38,7 +39,14 @@ export const getActiveContests = async (req, res) => {
 
 export const getContestInfoByID = async (req, res) => {
   const { id } = req.params
-  const contest = await Contests.findById(id)
+  const contest = await Contests.findOne({ _id: id }).populate({
+    path: 'tickets',
+    populate: {
+      path: 'user',
+      model: COLLECTION.USERS,
+      select: 'firstName profilePhoto'
+    }
+  })
   console.log('contest', contest)
   if (!contest) {
     return res
@@ -69,7 +77,7 @@ export const assignTicketToUser = async (req, res) => {
 
   const { tickets = [] } = contestData
 
-  if (tickets[0]?.userID) {
+  if (tickets[0]?.user) {
     return res.status(200).json({
       success: false,
       message: 'Ticket already been assigned ! try another'
@@ -78,7 +86,7 @@ export const assignTicketToUser = async (req, res) => {
 
   const resp = await Contests.updateOne(
     { _id: contestID, 'tickets._id': ticketID },
-    { 'tickets.$.userID': _id }
+    { 'tickets.$.user': _id }
   )
   const modifiedCount = resp.nModified
   res.status(200).json({
